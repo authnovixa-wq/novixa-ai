@@ -14,34 +14,24 @@ export default async function handler(req, res) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: "gpt-5-mini",
-        input: message
+        model: "gpt-4.1-mini",
+        input: [
+          {
+            role: "user",
+            content: message
+          }
+        ]
       })
     });
 
     const data = await response.json();
 
-    // 👇 الحل الحقيقي هنا
-    let reply = "";
+    console.log("FULL RESPONSE:", JSON.stringify(data, null, 2));
 
-    if (data.output_text) {
-      reply = data.output_text;
-    } else if (data.output && data.output.length > 0) {
-      for (const item of data.output) {
-        if (item.content) {
-          for (const part of item.content) {
-            if (part.type === "output_text") {
-              reply += part.text;
-            }
-          }
-        }
-      }
-    }
-
-    if (!reply) {
-      console.log("DEBUG FULL RESPONSE:", JSON.stringify(data, null, 2));
-      reply = "❌ لا يوجد رد من AI";
-    }
+    let reply =
+      data.output_text ||
+      data.output?.[0]?.content?.[0]?.text ||
+      "❌ لا يوجد رد";
 
     res.status(200).json({ reply });
 
