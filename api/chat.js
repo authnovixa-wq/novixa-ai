@@ -21,7 +21,24 @@ export default async function handler(req, res) {
 
     const data = await response.json();
 
-    const reply = data.output?.[0]?.content?.[0]?.text || "❌ لا يوجد رد";
+    // 🔥 هذا هو الحل الحقيقي
+    let reply = "";
+
+    if (data.output && data.output.length > 0) {
+      for (const item of data.output) {
+        if (item.content) {
+          for (const part of item.content) {
+            if (part.text) {
+              reply += part.text;
+            }
+          }
+        }
+      }
+    }
+
+    if (!reply) {
+      reply = "❌ لم يتم استخراج الرد";
+    }
 
     res.status(200).json({ reply });
 
