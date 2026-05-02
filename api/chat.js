@@ -21,9 +21,12 @@ export default async function handler(req, res) {
 
     const data = await response.json();
 
-    return res.status(200).json({
-      reply: data.output[0].content[0].text
-    });
+    const reply =
+      data.output?.[0]?.content?.[0]?.text ||
+      data.output_text ||
+      "لم يصل رد من الذكاء الاصطناعي";
+
+    return res.status(200).json({ reply });
 
   } catch (error) {
     return res.status(500).json({
