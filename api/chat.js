@@ -7,28 +7,6 @@ export default async function handler(req, res) {
   try {
     const { message, history = [] } = req.body;
 
-    const messages = [
-      {
-        role: "system",
-        content: `
-أنت Novixa AI، مساعد ذكي احترافي للشركات ورواد الأعمال.
-تقدم:
-- تحليل أفكار
-- بناء مشاريع
-- نصائح عملية
-- ردود واضحة ومباشرة
-
-تتكلم بالعربية أو الإنجليزية حسب المستخدم.
-كن ذكي، مختصر، واحترافي.
-`
-      },
-      ...history,
-      {
-        role: "user",
-        content: message
-      }
-    ];
-
     const response = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: {
@@ -37,21 +15,37 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: "gpt-5-mini",
-        input: messages
+        input: [
+          {
+            role: "system",
+            content: "أنت مساعد ذكي احترافي للشركات. رد باحتراف."
+          },
+          ...history,
+          {
+            role: "user",
+            content: message
+          }
+        ]
       })
     });
 
     const data = await response.json();
 
-    const reply =
-      data.output?.[0]?.content?.[0]?.text ||
-      "❌ لم يتم استلام رد من الذكاء الاصطناعي";
+    // 🔥 أهم تعديل هنا
+    let reply = "❌ لا يوجد رد";
+
+    if (data.output && data.output.length > 0) {
+      const content = data.output[0].content;
+      if (content && content.length > 0) {
+        reply = content[0].text;
+      }
+    }
 
     return res.status(200).json({ reply });
 
   } catch (error) {
     return res.status(500).json({
-      reply: "❌ خطأ في السيرفر"
+      reply: "❌ خطأ في السيرفر: " + error.message
     });
   }
 }
