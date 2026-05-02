@@ -14,24 +14,37 @@ export default async function handler(req, res) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: "gpt-4.1-mini",
-        input: [
-          {
-            role: "user",
-            content: message
-          }
-        ]
+        model: "gpt-5-mini",
+        input: message
       })
     });
 
     const data = await response.json();
 
-    console.log("FULL RESPONSE:", JSON.stringify(data, null, 2));
+    console.log("FULL:", JSON.stringify(data));
 
-    let reply =
-      data.output_text ||
-      data.output?.[0]?.content?.[0]?.text ||
-      "❌ لا يوجد رد";
+    // 👇 الحل القوي (يشمل كل الحالات)
+    let reply = "";
+
+    if (data.output_text) {
+      reply = data.output_text;
+    }
+
+    if (!reply && data.output) {
+      for (const item of data.output) {
+        if (item.content) {
+          for (const part of item.content) {
+            if (part.text) {
+              reply += part.text;
+            }
+          }
+        }
+      }
+    }
+
+    if (!reply) {
+      reply = "⚠️ AI رد لكن بدون نص (نعدلها الآن)";
+    }
 
     res.status(200).json({ reply });
 
