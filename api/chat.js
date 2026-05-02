@@ -7,37 +7,32 @@ export default async function handler(req, res) {
   try {
     const { message } = req.body;
 
-    const response = await fetch("https://api.openai.com/v1/responses", {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: "gpt-4.1-mini",
-        input: [
-          {
-            role: "user",
-            content: message
-          }
+        model: "gpt-4o-mini",
+        messages: [
+          { role: "user", content: message }
         ]
       })
     });
 
     const data = await response.json();
 
-    console.log("FULL DATA:", JSON.stringify(data, null, 2));
+    console.log("DATA:", JSON.stringify(data, null, 2));
 
-    // 🔥 هذا أهم تعديل
     const reply =
-      data.output_text ||
-      data.output?.[0]?.content?.[0]?.text ||
+      data.choices?.[0]?.message?.content ||
       "❌ لا يوجد رد من AI";
 
     return res.status(200).json({ reply });
 
   } catch (error) {
-    console.error("ERROR:", error);
+    console.error(error);
     return res.status(500).json({
       reply: "❌ خطأ في السيرفر"
     });
