@@ -2,48 +2,104 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-  <meta charset="UTF-8">
-  <title>Novixa AI</title>
-  <style>
-    body {
-      font-family: Arial;
-      text-align: center;
-      background: #0f172a;
-      color: white;
-      margin-top: 100px;
-    }
-    h1 {
-      font-size: 40px;
-    }
-    p {
-      color: #ccc;
-    }
-    button {
-      padding: 15px 30px;
-      font-size: 18px;
-      background: #3b82f6;
-      border: none;
-      color: white;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #2563eb;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>Novixa AI</title>
+
+<style>
+body {
+  font-family: Arial;
+  background: #0f172a;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 50px;
+}
+
+h1 {
+  margin-bottom: 10px;
+}
+
+#chat-box {
+  width: 400px;
+  height: 400px;
+  overflow-y: auto;
+  background: #1e293b;
+  padding: 10px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+
+.message {
+  margin: 5px 0;
+}
+
+.user {
+  color: #38bdf8;
+}
+
+.bot {
+  color: #22c55e;
+}
+
+input {
+  width: 300px;
+  padding: 10px;
+  border-radius: 5px;
+  border: none;
+}
+
+button {
+  padding: 10px;
+  margin-left: 5px;
+  background: #22c55e;
+  border: none;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+}
+</style>
+
 </head>
+
 <body>
 
-  <h1>🚀 Novixa AI</h1>
-  <p>أنشئ تطبيقك بالذكاء الاصطناعي خلال دقائق</p>
+<h1>🚀 Novixa AI</h1>
 
-  <button onclick="start()">ابدأ الآن</button>
+<div id="chat-box"></div>
 
-  <script>
-    function start() {
-      alert("قريباً: منشئ التطبيقات الذكي 🔥");
-    }
-  </script>
+<div>
+  <input id="input" placeholder="اكتب رسالتك..." />
+  <button onclick="sendMessage()">إرسال</button>
+</div>
+
+<script>
+async function sendMessage() {
+  const input = document.getElementById("input");
+  const chatBox = document.getElementById("chat-box");
+
+  const message = input.value;
+  if (!message) return;
+
+  chatBox.innerHTML += `<div class="message user">أنت: ${message}</div>`;
+
+  input.value = "";
+
+  const res = await fetch("/api/chat", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ message })
+  });
+
+  const data = await res.json();
+
+  chatBox.innerHTML += `<div class="message bot">AI: ${data.reply}</div>`;
+
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
+</script>
 
 </body>
 </html>
