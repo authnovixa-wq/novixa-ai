@@ -1,11 +1,33 @@
 
 export default async function handler(req, res) {
-  try {
-    if (req.method !== "POST") {
-      return res.status(405).json({ message: "Only POST allowed" });
-    }
+  if (req.method !== "POST") {
+    return res.status(405).json({ message: "Only POST allowed" });
+  }
 
-    const { message } = req.body;
+  try {
+    const { message, history = [] } = req.body;
+
+    const messages = [
+      {
+        role: "system",
+        content: `
+أنت Novixa AI، مساعد ذكي احترافي للشركات ورواد الأعمال.
+تقدم:
+- تحليل أفكار
+- بناء مشاريع
+- نصائح عملية
+- ردود واضحة ومباشرة
+
+تتكلم بالعربية أو الإنجليزية حسب المستخدم.
+كن ذكي، مختصر، واحترافي.
+`
+      },
+      ...history,
+      {
+        role: "user",
+        content: message
+      }
+    ];
 
     const response = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
@@ -14,8 +36,8 @@ export default async function handler(req, res) {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: "gpt-4.1-mini",
-        input: message
+        model: "gpt-5-mini",
+        input: messages
       })
     });
 
@@ -23,15 +45,13 @@ export default async function handler(req, res) {
 
     const reply =
       data.output?.[0]?.content?.[0]?.text ||
-      data.output_text ||
-      "لم يصل رد من الذكاء الاصطناعي";
+      "❌ لم يتم استلام رد من الذكاء الاصطناعي";
 
     return res.status(200).json({ reply });
 
   } catch (error) {
     return res.status(500).json({
-      error: "Server error",
-      details: error.message
+      reply: "❌ خطأ في السيرفر"
     });
   }
 }
