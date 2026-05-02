@@ -15,21 +15,29 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: "gpt-4.1-mini",
-        input: message
+        input: [
+          {
+            role: "user",
+            content: message
+          }
+        ]
       })
     });
 
     const data = await response.json();
 
-    console.log("OPENAI RESPONSE:", data);
+    console.log("FULL DATA:", JSON.stringify(data, null, 2));
 
-    return res.status(200).json({
-      reply: data.output?.[0]?.content?.[0]?.text || "❌ لا يوجد رد من AI"
-    });
+    // 🔥 هذا أهم تعديل
+    const reply =
+      data.output_text ||
+      data.output?.[0]?.content?.[0]?.text ||
+      "❌ لا يوجد رد من AI";
+
+    return res.status(200).json({ reply });
 
   } catch (error) {
-    console.error(error);
-
+    console.error("ERROR:", error);
     return res.status(500).json({
       reply: "❌ خطأ في السيرفر"
     });
