@@ -2,92 +2,76 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-<meta charset="UTF-8">
+<meta charset="UTF-8" />
 <title>Novixa AI</title>
-
 <style>
 body {
+  background: linear-gradient(135deg,#0f172a,#1e293b);
   font-family: Arial;
-  text-align: center;
-  background: #0f172a;
   color: white;
+  text-align: center;
 }
-
-#chat {
+.chat {
   width: 300px;
   height: 400px;
-  margin: auto;
-  background: #1e293b;
-  padding: 10px;
+  margin: 40px auto;
+  background: rgba(255,255,255,0.05);
   border-radius: 10px;
+  padding: 10px;
   overflow-y: auto;
 }
-
 input {
   width: 220px;
   padding: 10px;
 }
-
 button {
   padding: 10px;
   background: #22c55e;
   border: none;
   color: white;
-  cursor: pointer;
 }
 </style>
-
 </head>
 
 <body>
 
-<h1>🚀 Novixa AI</h1>
+<h2>🚀 Novixa AI</h2>
 
-<div id="chat"></div>
+<div id="chat" class="chat"></div>
 
-<br>
-
-<input id="msg" placeholder="اكتب هنا..." />
+<input id="input" placeholder="اكتب..." />
 <button onclick="send()">إرسال</button>
 
 <script>
-let history = [];
-
 async function send() {
-  const input = document.getElementById("msg");
-  const message = input.value;
-
-  if (!message) return;
-
+  const input = document.getElementById("input");
   const chat = document.getElementById("chat");
 
-  chat.innerHTML += `<div style="color:#38bdf8">أنت: ${message}</div>`;
+  const msg = input.value;
+  if (!msg) return;
+
+  chat.innerHTML += `<div style="color:#38bdf8">أنت: ${msg}</div>`;
+
   input.value = "";
 
-  // Loading
-  chat.innerHTML += `<div id="loading" style="color:yellow">AI: جاري التفكير...</div>`;
+  try {
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ message: msg })
+    });
 
-  const res = await fetch("/api/chat", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      message: message,
-      history: history
-    })
-  });
+    const data = await res.json();
 
-  const data = await res.json();
+    console.log("RESPONSE:", data);
 
-  document.getElementById("loading").remove();
+    chat.innerHTML += `<div style="color:#22c55e">AI: ${data.reply}</div>`;
 
-  chat.innerHTML += `<div style="color:#4ade80">AI: ${data.reply}</div>`;
-
-  history.push({ role: "user", content: message });
-  history.push({ role: "assistant", content: data.reply });
-
-  chat.scrollTop = chat.scrollHeight;
+  } catch (e) {
+    chat.innerHTML += `<div style="color:red">❌ خطأ في الاتصال</div>`;
+  }
 }
 </script>
 
