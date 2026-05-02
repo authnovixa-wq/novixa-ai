@@ -21,14 +21,16 @@ export default async function handler(req, res) {
 
     const data = await response.json();
 
-    // 🔥 هذا هو الحل الحقيقي
+    // 👇 الحل الحقيقي هنا
     let reply = "";
 
-    if (data.output && data.output.length > 0) {
+    if (data.output_text) {
+      reply = data.output_text;
+    } else if (data.output && data.output.length > 0) {
       for (const item of data.output) {
         if (item.content) {
           for (const part of item.content) {
-            if (part.text) {
+            if (part.type === "output_text") {
               reply += part.text;
             }
           }
@@ -37,12 +39,14 @@ export default async function handler(req, res) {
     }
 
     if (!reply) {
-      reply = "❌ لم يتم استخراج الرد";
+      console.log("DEBUG FULL RESPONSE:", JSON.stringify(data, null, 2));
+      reply = "❌ لا يوجد رد من AI";
     }
 
     res.status(200).json({ reply });
 
   } catch (error) {
+    console.error(error);
     res.status(500).json({ reply: "❌ خطأ في السيرفر" });
   }
 }
