@@ -21,17 +21,14 @@ export default async function handler(req, res) {
 
     const data = await response.json();
 
-    // 👇 أهم سطر إصلاح
-    const reply =
-      data.output?.[0]?.content?.[0]?.text ||
-      "⚠️ لم يتم توليد رد (تحقق من المفتاح)";
-
-    res.status(200).json({ reply });
+    return res.status(200).json({
+      reply: data.output[0].content[0].text
+    });
 
   } catch (error) {
-    res.status(500).json({
-      reply: "❌ خطأ في السيرفر",
-      error: error.message
+    return res.status(500).json({
+      error: "Server error",
+      details: error.message
     });
   }
 }
