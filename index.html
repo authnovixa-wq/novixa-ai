@@ -23,18 +23,20 @@ body {
 input {
   width: 220px;
   padding: 10px;
-}<script>
+<script>
 let messages = [];
 
-async function sendMessage() {
+async function send() {
   const input = document.getElementById("input");
   const chat = document.getElementById("chat");
 
   const text = input.value;
   if (!text) return;
 
+  // عرض رسالة المستخدم
   chat.innerHTML += `<div style="color:#38bdf8">أنت: ${text}</div>`;
 
+  // حفظ الرسالة
   messages.push({
     role: "user",
     content: text
@@ -55,12 +57,14 @@ async function sendMessage() {
 
     const data = await res.json();
 
+    // عرض رد الذكاء
+    chat.innerHTML += `<div style="color:#22c55e">AI: ${data.reply}</div>`;
+
+    // حفظ الرد
     messages.push({
       role: "assistant",
       content: data.reply
     });
-
-    chat.innerHTML += `<div style="color:#22c55e">AI: ${data.reply}</div>`;
 
   } catch (e) {
     chat.innerHTML += `<div style="color:red">❌ خطأ في الاتصال</div>`;
