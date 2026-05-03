@@ -23,7 +23,50 @@ body {
 input {
   width: 220px;
   padding: 10px;
+}<script>
+let messages = [];
+
+async function sendMessage() {
+  const input = document.getElementById("input");
+  const chat = document.getElementById("chat");
+
+  const text = input.value;
+  if (!text) return;
+
+  chat.innerHTML += `<div style="color:#38bdf8">أنت: ${text}</div>`;
+
+  messages.push({
+    role: "user",
+    content: text
+  });
+
+  input.value = "";
+
+  try {
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        messages: messages
+      })
+    });
+
+    const data = await res.json();
+
+    messages.push({
+      role: "assistant",
+      content: data.reply
+    });
+
+    chat.innerHTML += `<div style="color:#22c55e">AI: ${data.reply}</div>`;
+
+  } catch (e) {
+    chat.innerHTML += `<div style="color:red">❌ خطأ في الاتصال</div>`;
+  }
 }
+</script>
 button {
   padding: 10px;
   background: #22c55e;
@@ -42,38 +85,7 @@ button {
 <input id="input" placeholder="اكتب..." />
 <button onclick="send()">إرسال</button>
 
-<script>
-async function send() {
-  const input = document.getElementById("input");
-  const chat = document.getElementById("chat");
 
-  const msg = input.value;
-  if (!msg) return;
-
-  chat.innerHTML += `<div style="color:#38bdf8">أنت: ${msg}</div>`;
-
-  input.value = "";
-
-  try {
-    const res = await fetch("/api/chat", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ message: msg })
-    });
-
-    const data = await res.json();
-
-    console.log("RESPONSE:", data);
-
-    chat.innerHTML += `<div style="color:#22c55e">AI: ${data.reply}</div>`;
-
-  } catch (e) {
-    chat.innerHTML += `<div style="color:red">❌ خطأ في الاتصال</div>`;
-  }
-}
-</script>
 
 </body>
 </html>
