@@ -19,17 +19,16 @@ export default async function handler(req, res) {
 
     const userId = "guest";
 
-    // 🔥 آخر رسالة من المستخدم
     const lastMessage = messages[messages.length - 1].content;
 
-    // 🧠 حفظ رسالة المستخدم
+    // حفظ رسالة المستخدم
     await supabase.from("messages").insert({
       user_id: userId,
       role: "user",
       content: lastMessage
     });
 
-    // 📥 جلب آخر المحادثات
+    // جلب المحادثة
     const { data: history } = await supabase
       .from("messages")
       .select("*")
@@ -42,7 +41,7 @@ export default async function handler(req, res) {
       content: m.content
     }));
 
-    // 🤖 طلب من OpenAI
+    // طلب OpenAI
     const response = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: {
@@ -57,8 +56,8 @@ export default async function handler(req, res) {
             content: `
 أنت Novixa AI:
 خبير في المشاريع والبيزنس
-تعطي أفكار + خطط تنفيذ + نصائح ربح
-تتكلم عربي بسيط واحترافي
+تعطي أفكار + خطط تنفيذ + طرق ربح
+تشرح بشكل بسيط واحترافي
 `
           },
           ...formatted
@@ -68,9 +67,15 @@ export default async function handler(req, res) {
 
     const data = await response.json();
 
-    const reply = data.output_text || "⚠️ لم يتم الرد";
+    let reply = "❌ خطأ";
 
-    // 🧠 حفظ رد AI
+    try {
+      reply = data.output[0].content[0].text;
+    } catch (e) {
+      console.log(data);
+    }
+
+    // حفظ رد AI
     await supabase.from("messages").insert({
       user_id: userId,
       role: "assistant",
@@ -80,6 +85,7 @@ export default async function handler(req, res) {
     return res.status(200).json({ reply });
 
   } catch (err) {
+    console.error(err);
     return res.status(500).json({ reply: "❌ خطأ في السيرفر" });
   }
 }
