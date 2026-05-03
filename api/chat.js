@@ -1,33 +1,14 @@
 export default async function handler(req, res) {
-  // ✅ السماح فقط بـ POST
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Only POST allowed" });
-  }
-
   try {
-    // ✅ تحقق من وجود API Key
-    if (!process.env.OPENAI_API_KEY) {
-      return res.status(500).json({
-        error: "API key missing from server"
-      });
+    if (req.method !== "POST") {
+      return res.status(405).json({ message: "Only POST allowed" });
     }
 
-    const { message } = req.body;
+    const { messages } = req.body;
 
-    // ✅ تحقق من الإدخال
-    if (!message || typeof message !== "string") {
-      return res.status(400).json({
-        error: "Invalid message"
-      });
+    if (!messages || !Array.isArray(messages)) {
+      return res.status(400).json({ error: "messages must be an array" });
     }
-
-    // 🧠 تحسين بسيط: توجيه الأسلوب
-    const systemPrompt = `
-أنت Novixa AI.
-تتحدث بالعربية والإنجليزية.
-كن واضح، مختصر، واحترافي.
-ساعد المستخدم في الأعمال، البرمجة، والأفكار.
-`;
 
     const response = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
@@ -37,14 +18,20 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: "gpt-4.1-mini",
-        input: `${systemPrompt}\n\nUser: ${message}`
+        input: [
+          {
+            role: "system",
+            content: "أنت Novixa AI، مساعد ذكي احترافي يساعد في الأعمال والتقنية، تجيب بالعربية أو الإنجليزية حسب المستخدم، بأسلوب واضح واحترافي."
+          },
+          ...messages
+        ]
       })
     });
 
     const data = await response.json();
 
-    // 🔍 طباعة للتشخيص (تشوفها في Vercel Logs)
-    console.log("OPENAI RESPONSE:", JSON.stringify(data, null, 2));
+    // 🔍 تشخيص
+    console.log("FULL OPENAI RESPONSE:", JSON.stringify(data, null, 2));
 
     let reply = "⚠️ لم يتم استخراج رد";
 
@@ -57,8 +44,7 @@ export default async function handler(req, res) {
     return res.status(200).json({ reply });
 
   } catch (error) {
-    console.error("SERVER ERROR:", error);
-
+    console.error("ERROR:", error);
     return res.status(500).json({
       error: "Server error",
       details: error.message
