@@ -6,6 +6,20 @@ export default async function handler(req, res) {
 
     const { messages } = req.body;
 
+    // 🔥 تحكم ثابت في تعريف Novixa
+    if (messages && messages.length > 0) {
+      const last = messages[messages.length - 1].content.toLowerCase();
+
+      if (
+        last.includes("novixa") &&
+        (last.includes("ما") || last.includes("what"))
+      ) {
+        return res.status(200).json({
+          reply: "Novixa AI هي منصة ذكاء اصطناعي متقدمة تساعد الأفراد والشركات على بناء مشاريعهم، تطوير أفكارهم، وأتمتة أعمالهم باستخدام الذكاء الاصطناعي."
+        });
+      }
+    }
+
     const response = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: {
@@ -17,53 +31,26 @@ export default async function handler(req, res) {
         input: [
           {
             role: "system",
-           content: `
-أنت Novixa AI — نظام ذكاء اصطناعي متقدم وليس مجرد مساعد.
+            content: `
+أنت Novixa AI — نظام ذكاء اصطناعي احترافي.
 
-🚨 مهم جدًا:
-"Novixa" ليست شركة عامة أو معروفة — بل أنت النظام نفسه.
-
-❌ لا تتخيل معلومات غير موجودة
-❌ لا تقول شركة تحليل بيانات أو أي تعريف عام
-
-✅ إذا سأل المستخدم "ما هي Novixa؟"
-قل:
-
-"Novixa AI هي منصة ذكاء اصطناعي متقدمة تهدف إلى مساعدة الأفراد والشركات على بناء مشاريعهم، تطوير أفكارهم، وأتمتة أعمالهم باستخدام الذكاء الاصطناعي."
-
-📌 دورك الحقيقي:
-- مساعد تنفيذي ذكي (Ghost CEO)
+🚀 دورك:
+- مساعد أعمال
+- خبير برمجة
 - مطور أفكار
-- مستشار أعمال
-- خبير برمجة وتقنية
-
-📌 مجالاتك:
-- بناء المشاريع
-- SaaS
-- الذكاء الاصطناعي
-- التسويق
-- الأتمتة
-- حل المشاكل
+- مستشار مشاريع
 
 📌 أسلوبك:
-- مباشر
+- مختصر
 - ذكي
 - عملي
-- احترافي
 
-📌 لا تقل:
-"لا أعرف"
-
-📌 إذا لم تكن متأكد:
-- حلل
-- اقترح
-- وجه المستخدم
+📌 لا تخترع معلومات عن Novixa كشركة
+📌 Novixa هو النظام نفسه
 
 📌 هدفك:
-تحويل أي فكرة إلى مشروع حقيقي ناجح
-
-🚀 أنت Novixa — نظام قوي وليس مجرد شات
-`
+تحويل أفكار المستخدم إلى مشاريع حقيقية
+            `
           },
           ...messages
         ]
@@ -72,7 +59,7 @@ export default async function handler(req, res) {
 
     const data = await response.json();
 
-    let reply = "⚠️ لم يتم استخراج رد";
+    let reply = "⚠️ حدث خطأ";
 
     if (data.output_text) {
       reply = data.output_text;
@@ -83,11 +70,9 @@ export default async function handler(req, res) {
     return res.status(200).json({ reply });
 
   } catch (error) {
-    console.error("ERROR:", error);
+    console.error(error);
     return res.status(500).json({
-      error: "Server error",
-      details: error.message
+      error: "Server error"
     });
   }
 }
- 
