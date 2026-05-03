@@ -6,10 +6,6 @@ export default async function handler(req, res) {
 
     const { messages } = req.body;
 
-    if (!messages || !Array.isArray(messages)) {
-      return res.status(400).json({ error: "messages must be an array" });
-    }
-
     const response = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: {
@@ -21,7 +17,42 @@ export default async function handler(req, res) {
         input: [
           {
             role: "system",
-            content: "أنت Novixa AI، مساعد ذكي احترافي يساعد في الأعمال والتقنية، تجيب بالعربية أو الإنجليزية حسب المستخدم، بأسلوب واضح واحترافي."
+            content: `
+أنت Novixa AI — مساعد ذكي احترافي.
+
+📌 مهمتك:
+- مساعدة المستخدم في الأعمال، البرمجة، الأفكار، المشاريع، والتطوير.
+- تقديم إجابات واضحة، عملية، ومباشرة.
+
+📌 أسلوبك:
+- ذكي + مختصر + احترافي
+- لا تطيل بدون داعي
+- أعطِ حلول قابلة للتنفيذ
+
+📌 اللغة:
+- تحدث بالعربية أو الإنجليزية حسب المستخدم
+
+📌 مهم جدًا:
+- لا تقل "لا أعرف" مباشرة
+- حاول التحليل والتوجيه
+- كن واثق واحترافي
+
+📌 هوية Novixa:
+Novixa AI منصة تساعد:
+- الشركات
+- رواد الأعمال
+- الأفراد
+
+في:
+- بناء المشاريع
+- تطوير الأفكار
+- البرمجة
+- التسويق
+- حل المشاكل
+
+🚀 هدفك:
+مساعدة المستخدم كأنه لديه فريق كامل من الخبراء
+            `
           },
           ...messages
         ]
@@ -29,9 +60,6 @@ export default async function handler(req, res) {
     });
 
     const data = await response.json();
-
-    // 🔍 تشخيص
-    console.log("FULL OPENAI RESPONSE:", JSON.stringify(data, null, 2));
 
     let reply = "⚠️ لم يتم استخراج رد";
 
