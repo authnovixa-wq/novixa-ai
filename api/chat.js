@@ -11,16 +11,25 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { message, userId } = req.body;
+    const { messages } = req.body;
 
-    // 🔥 حفظ رسالة المستخدم
+    if (!messages || messages.length === 0) {
+      return res.status(400).json({ reply: "❌ لا توجد رسالة" });
+    }
+
+    const userId = "guest";
+
+    // 🔥 آخر رسالة من المستخدم
+    const lastMessage = messages[messages.length - 1].content;
+
+    // 🧠 حفظ رسالة المستخدم
     await supabase.from("messages").insert({
       user_id: userId,
       role: "user",
-      content: message
+      content: lastMessage
     });
 
-    // 🔥 جلب آخر محادثات
+    // 📥 جلب آخر المحادثات
     const { data: history } = await supabase
       .from("messages")
       .select("*")
@@ -28,16 +37,16 @@ export default async function handler(req, res) {
       .order("created_at", { ascending: true })
       .limit(20);
 
-    const formatted = history.map(m => ({
+    const formatted = history.map((m) => ({
       role: m.role,
       content: m.content
     }));
 
-    // 🔥 طلب من OpenAI
+    // 🤖 طلب من OpenAI
     const response = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
@@ -45,7 +54,12 @@ export default async function handler(req, res) {
         input: [
           {
             role: "system",
-            content: "أنت Novixa AI مساعد ذكي للأعمال"
+            content: `
+أنت Novixa AI:
+خبير في المشاريع والبيزنس
+تعطي أفكار + خطط تنفيذ + نصائح ربح
+تتكلم عربي بسيط واحترافي
+`
           },
           ...formatted
         ]
@@ -54,18 +68,18 @@ export default async function handler(req, res) {
 
     const data = await response.json();
 
-    let reply = data.output_text || "❌";
+    const reply = data.output_text || "⚠️ لم يتم الرد";
 
-    // 🔥 حفظ رد AI
+    // 🧠 حفظ رد AI
     await supabase.from("messages").insert({
       user_id: userId,
       role: "assistant",
       content: reply
     });
 
-    res.status(200).json({ reply });
+    return res.status(200).json({ reply });
 
-  } catch (e) {
-    res.status(500).json({ reply: "خطأ" });
+  } catch (err) {
+    return res.status(500).json({ reply: "❌ خطأ في السيرفر" });
   }
 }
