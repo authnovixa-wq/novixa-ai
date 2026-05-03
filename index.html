@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-<meta charset="UTF-8" />
+<meta charset="UTF-8">
 <title>Novixa AI</title>
 
 <style>
@@ -44,7 +44,7 @@ button {
 
 <div id="chat"></div>
 
-<input id="input" placeholder="اكتب هنا..." />
+<input id="input" placeholder="اكتب رسالتك..." />
 <button onclick="send()">إرسال</button>
 
 <script>
@@ -54,10 +54,10 @@ async function send() {
   const input = document.getElementById("input");
   const chat = document.getElementById("chat");
 
-  const text = input.value;
+  const text = input.value.trim();
   if (!text) return;
 
-  chat.innerHTML += `<div style="color:#38bdf8">أنت: ${text}</div>`;
+  chat.innerHTML += `<div style="color:#38bdf8">👤 ${text}</div>`;
 
   messages.push({
     role: "user",
@@ -77,15 +77,17 @@ async function send() {
 
     const data = await res.json();
 
-    chat.innerHTML += `<div style="color:#22c55e">AI: ${data.reply}</div>`;
+    chat.innerHTML += `<div style="color:#22c55e">🤖 ${data.reply}</div>`;
 
     messages.push({
       role: "assistant",
       content: data.reply
     });
 
+    chat.scrollTop = chat.scrollHeight;
+
   } catch (e) {
-    chat.innerHTML += `<div style="color:red">❌ خطأ في الاتصال</div>`;
+    chat.innerHTML += `<div style="color:red">❌ خطأ</div>`;
   }
 }
 </script>
