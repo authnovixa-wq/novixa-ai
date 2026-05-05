@@ -6,9 +6,14 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { messages } = req.body;
+    const messages = req.body?.messages || [];
 
-    // إنشاء اتصال Supabase
+    if (!messages.length) {
+      return res.status(400).json({ reply: "❌ لا توجد رسالة" });
+    }
+
+    const lastMessage = messages[messages.length - 1].content;
+
     const supabase = createClient(
       process.env.SUPABASE_URL,
       process.env.SUPABASE_KEY
@@ -16,16 +21,12 @@ export default async function handler(req, res) {
 
     const userId = "user-1";
 
-    const lastMessage = messages[messages.length - 1]?.content || "";
-
-    // حفظ رسالة المستخدم
     await supabase.from('messages').insert({
       user_id: userId,
       role: 'user',
       content: lastMessage
     });
 
-    // طلب OpenAI
     const response = await fetch('https://api.openai.com/v1/responses', {
       method: 'POST',
       headers: {
@@ -42,7 +43,6 @@ export default async function handler(req, res) {
 
     const reply = data.output_text || "❌ خطأ في الرد";
 
-    // حفظ رد AI
     await supabase.from('messages').insert({
       user_id: userId,
       role: 'assistant',
