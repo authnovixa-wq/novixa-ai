@@ -1,17 +1,20 @@
 import OpenAI from "openai";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
 export default async function handler(req, res) {
   try {
+    console.log("🔥 API CALLED");
+
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+
     let body = req.body;
 
-    // حل مشكلة Vercel parsing
     if (typeof body === "string") {
       body = JSON.parse(body);
     }
+
+    console.log("BODY:", body);
 
     const message = body?.message;
 
@@ -29,10 +32,15 @@ export default async function handler(req, res) {
 
     const reply = completion.choices[0].message.content;
 
+    console.log("REPLY:", reply);
+
     return res.status(200).json({ reply });
 
   } catch (error) {
-    console.error("ERROR:", error);
-    return res.status(500).json({ reply: "Server error" });
+    console.error("❌ ERROR:", error);
+    return res.status(500).json({
+      reply: "Server error",
+      error: error.message
+    });
   }
 }
