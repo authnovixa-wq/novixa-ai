@@ -1,40 +1,27 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<title>Novixa AI</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Novixa AI</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
+<body>
 
-<body style="background:#0b1c2c;color:white;text-align:center;padding:50px">
+<div class="app">
+  <header>
+    <h1>🚀 Novixa AI</h1>
+    <button id="clearBtn">🗑️ مسح</button>
+  </header>
 
-<h1>🚀 Novixa AI</h1>
+  <main id="chat"></main>
 
-<input id="msg" placeholder="اكتب رسالتك" style="width:60%;padding:10px" />
-<button onclick="send()">إرسال</button>
+  <div class="input">
+    <input id="msg" placeholder="اكتب رسالتك..." autocomplete="off" />
+    <button id="sendBtn">إرسال</button>
+  </div>
+</div>
 
-<p id="res"></p>
-
-<script>
-async function send() {
-  const msg = document.getElementById("msg").value;
-
-  const res = await fetch("/api/chat", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ message: msg })
-  });
-
-  const data = await res.json();
-
-  if (data.reply) {
-  document.getElementById("res").innerText = data.reply;
-} else {
-  document.getElementById("res").innerText = "❌ Error: " + JSON.stringify(data);
-}
-}
-</script>
-
+<script src="script.js"></script>
 </body>
 </html>
