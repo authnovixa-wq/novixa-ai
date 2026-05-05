@@ -3,91 +3,33 @@
 <head>
 <meta charset="UTF-8">
 <title>Novixa AI</title>
-
-<style>
-body {
-  background: #0f172a;
-  color: white;
-  font-family: Arial;
-  text-align: center;
-}
-
-#chat {
-  width: 90%;
-  max-width: 600px;
-  height: 400px;
-  margin: 20px auto;
-  padding: 10px;
-  overflow-y: auto;
-  background: #1e293b;
-  border-radius: 10px;
-}
-
-input {
-  width: 70%;
-  padding: 10px;
-}
-
-button {
-  padding: 10px;
-  background: #10b981;
-  color: white;
-  border: none;
-  cursor: pointer;
-}
-</style>
 </head>
 
-<body>
+<body style="background:#0b1c2c;color:white;text-align:center;padding:50px">
 
-<h2>🚀 Novixa AI</h2>
+<h1>🚀 Novixa AI</h1>
 
-<div id="chat"></div>
-
-<input id="input" placeholder="اكتب رسالتك...">
+<input id="msg" placeholder="اكتب رسالتك" style="width:60%;padding:10px" />
 <button onclick="send()">إرسال</button>
 
+<p id="res"></p>
+
 <script>
-let messages = [];
-
 async function send() {
-  const input = document.getElementById("input");
-  const chat = document.getElementById("chat");
+  const msg = document.getElementById("msg").value;
 
-  const text = input.value.trim();
-  if (!text) return;
-
-  // عرض رسالة المستخدم
-  chat.innerHTML += `<div style="color:#38bdf8">أنت: ${text}</div>`;
-
-  messages.push({
-    role: "user",
-    content: text
+  const res = await fetch("/api/chat", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ message: msg })
   });
 
-  input.value = "";
+  const data = await res.json();
 
-  try {
-    const res = await fetch("/api/chat", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ messages })
-    });
-
-    const data = await res.json();
-
-    chat.innerHTML += `<div style="color:#22c55e">AI: ${data.reply}</div>`;
-
-    messages.push({
-      role: "assistant",
-      content: data.reply
-    });
-
-  } catch (e) {
-    chat.innerHTML += `<div style="color:red">❌ خطأ في الاتصال</div>`;
-  }
+  document.getElementById("res").innerText =
+    data.reply || data.error;
 }
 </script>
 
