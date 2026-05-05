@@ -6,7 +6,14 @@ const openai = new OpenAI({
 
 export default async function handler(req, res) {
   try {
-    const { message } = req.body;
+    let body = req.body;
+
+    // حل مشكلة Vercel parsing
+    if (typeof body === "string") {
+      body = JSON.parse(body);
+    }
+
+    const message = body?.message;
 
     if (!message) {
       return res.status(400).json({ reply: "No message provided" });
@@ -22,10 +29,10 @@ export default async function handler(req, res) {
 
     const reply = completion.choices[0].message.content;
 
-    res.status(200).json({ reply });
+    return res.status(200).json({ reply });
 
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ reply: "Server error" });
+    console.error("ERROR:", error);
+    return res.status(500).json({ reply: "Server error" });
   }
 }
